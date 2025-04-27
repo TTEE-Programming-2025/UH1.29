@@ -84,14 +84,26 @@ void showWelcomeScreen() {
 
 // 密碼檢查函數
 int passwordCheck() {
-    int pwd;
+    int pwd = 0;
     int attempts = 0;
+    int digit;
+    char ch;
 
     showWelcomeScreen();
 
     while (attempts < 3) {
-        printf("\n請輸入密碼: ");
-        scanf("%d", &pwd);
+        pwd = 0;
+        printf("\n請輸入密碼（4位數）: ");
+        int count = 0;
+        while (count < 4) {  // 限制輸入4個數字
+            ch = getch();    // 不顯示輸入字元
+            if (ch >= '0' && ch <= '9') {
+                printf("*"); // 顯示星號
+                digit = ch - '0';
+                pwd = pwd * 10 + digit;
+                count++;
+            }
+        }
 
         if (pwd == PASSWORD) {
             printf("\n密碼正確，歡迎！\n");
@@ -99,10 +111,14 @@ int passwordCheck() {
         } else {
             printf("\n密碼錯誤！\n");
             attempts++;
+            if (attempts < 3) {
+                printf("剩餘嘗試次數: %d\n", 3 - attempts);
+            }
         }
     }
     return 0;
 }
+
 // 主選單顯示
 void showMenu() {
     printf("--------------------------\n");
@@ -165,3 +181,4 @@ void showMultiplicationTable() {
         }
     } while (1);
 }
+這次創作的這個作業學習到很多程式運用和技巧，創作的過程中遇到了很多困難與難題，但是都一一克服。訓練了我的耐心和毅力，過程不容易，但是完成作業的成就感比什麼都來的快樂。
