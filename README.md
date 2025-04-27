@@ -69,11 +69,11 @@ void showWelcomeScreen() {
     printf("|                                 |\n");
     printf("|      Welcome to H1.29 !         |\n");
     printf("|                                 |\n");
-    printf("|        C Language Project       |\n");
+    printf("|        C Language       |\n");
     printf("|                                 |\n");
     printf("|         工程不分系               |\n");
     printf("|                                 |\n");
-    printf("|        Let's go !!!             |\n");
+    printf("|        Let's go !             |\n");
     printf("|                                 |\n");
     printf("===================================\n");
     printf("\n預設密碼為: %d\n", PASSWORD);
@@ -102,4 +102,66 @@ int passwordCheck() {
         }
     }
     return 0;
+}
+// 主選單顯示
+void showMenu() {
+    printf("--------------------------\n");
+    printf("|  a. 畫出直角三角形        |\n");
+    printf("|  b. 顯示乘法表            |\n");
+    printf("|  c. 結束                  |\n");
+    printf("--------------------------\n");
+}
+
+// 畫直角三角形功能
+void drawTriangle() {
+    char ch;
+    int rows, i, j;
+
+    do {
+        printf("\n請輸入字元 (a~n): ");
+        ch = getch();
+        printf("%c\n", ch);
+
+        if (ch >= 'a' && ch <= 'n') {
+            rows = ch - 'a' + 1;
+
+            for (i = 1; i <= rows; i++) {
+                for (j = 1; j <= i; j++) {
+                    printf("*");
+                }
+                printf("\n");
+            }
+
+            printf("\n按任意鍵返回主選單...\n");
+            getch();
+            return;
+        } else {
+            printf("\n輸入錯誤！請輸入a到n之間的字元。\n");
+        }
+    } while (1);
+}
+
+// 顯示乘法表功能
+void showMultiplicationTable() {
+    int n, i, j;
+
+    do {
+        printf("\n請輸入一個1~9的整數: ");
+        scanf("%d", &n);
+
+        if (n >= 1 && n <= 9) {
+            printf("\n【%d乘%d乘法表】\n", n, n);
+            for (i = 1; i <= n; i++) {
+                for (j = 1; j <= n; j++) {
+                    printf("%2d*%2d=%2d  ", i, j, i*j);
+                }
+                printf("\n");
+            }
+            printf("\n按任意鍵返回主選單...\n");
+            getch();
+            return;
+        } else {
+            printf("\n輸入錯誤！請輸入1到9之間的數字。\n");
+        }
+    } while (1);
 }
