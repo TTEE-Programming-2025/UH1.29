@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <conio.h> // For getch() and clrscr() (Windows).  Use ncurses.h for Linux
+#ifdef _WIN32
+#include <conio.h> // For getch() and clrscr() (Windows)
+#else
+#include <ncurses.h> // For getch() and clear() (Linux/macOS)
+#endif
 #include <time.h>   // For random number generation
+#include <string.h> // For strcmp()
 
 #define ROWS 9
 #define COLS 9
@@ -9,17 +14,17 @@
 
 // Function prototypes
 void display_personal_screen();
-int  verify_password();
+int verify_password();
 void display_menu();
 void display_seats(char seats[ROWS][COLS]);
 void arrange_seats(char seats[ROWS][COLS]);
 void choose_seats(char seats[ROWS][COLS]);
 void exit_program();
-void clear_screen(); // Function to clear the screen
+void clear_screen();
 
 int main() {
     char seats[ROWS][COLS];
-    int  choice;
+    int choice;
 
     srand(time(0)); // Seed the random number generator
 
@@ -30,7 +35,7 @@ int main() {
         return 1;
     }
 
-    // Initialize seats (e.g., with '-')
+    // Initialize seats
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             seats[i][j] = '-';
@@ -52,7 +57,7 @@ int main() {
         clear_screen();
         display_menu();
         printf("Enter your choice: ");
-        choice = getch(); // Use getch() to get character input
+        choice = getch();
 
         switch (choice) {
             case 'a':
@@ -82,50 +87,265 @@ int main() {
     return 0;
 }
 
-// Function implementations will go here (see below)
+#include <stdio.h>
+#include <string.h>
+
+#define PASSWORD "1234" // 定義密碼為常數
+
 void display_personal_screen() {
-    //  Replace this with your personal screen (at least 20 lines)
+    // 顯示個人化畫面，滿足至少 20 行的要求
     printf("*****************************************\n");
-    printf("* *\n");
-    printf("* Welcome to H1.29         *\n");
-    printf("* *\n");
-    printf("* Hello *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("* *\n");
-    printf("*****************************************\n");
-    printf("\n");
+    printf("*                                       *\n");
+    printf("*      Welcome to the H1.29     *\n");
+    printf("*              Hello                 *\n");
+    printf("*                                       *\n");
+    printf("*     Developed by: Your Name Here      *\n");
+    printf("*                                       *\n");
+    printf("*     1. 嗨          *\n");
+    printf("*     2. 你好                    *\n");
+    printf("*     3. 興趣:打球                 *\n");
+    printf("*     4. 休閒:打遊戲                *\n");
+    printf("*     5. 年齡19                           *\n");
+    printf("*                                       *\n");
+    printf("*          *\n");
+    printf("*                                       *\n");
+    printf("*            *\n");
+    printf("*                        *\n");
+    printf("*                                       *\n");
+    printf("*****************************************\n\n");
 }
 
 int verify_password() {
-    char input[5]; // To store the 4-digit password + null terminator
-    int  tries = 0;
+    char input[10]; // 提供足夠空間避免溢位
+    int tries = 0;
 
     while (tries < 3) {
         printf("Enter the 4-digit password: ");
-        scanf("%4s", input); // Read up to 4 characters
+        scanf("%9s", input); // 安全讀取最多9個字元，避免緩衝區溢位
 
         if (strcmp(input, PASSWORD) == 0) {
-            printf("Password correct. Welcome!\n");
-            return 1; // Success
+            printf("Password correct. Welcome!\n\n");
+            return 1; // 成功
         } else {
             tries++;
-            printf("Incorrect password. Try again.\n");
+            if (tries < 3)
+                printf("Incorrect password. You have %d attempt(s) left.\n", 3 - tries);
         }
     }
 
-    printf("Too many incorrect attempts.\n");
-    return 0; // Failure
+    printf("Too many incorrect attempts. Access denied.\n\n");
+    return 0; // 失敗
+}
+
+
+void display_menu() {
+    printf("----[Booking System]----\n");
+    printf("a. Available seats\n");
+    printf("b. Arrange for you\n");
+    printf("c. Choose by yourself\n");
+    printf("d. Exit\n");
+    printf("------------------------\n");
+}
+
+void display_seats(char seats[ROWS][COLS]) {
+    printf("  ");
+    for (int i = 0; i < COLS; i++) {
+        printf("%d", i + 1);
+    }
+    printf("\n");
+
+    for (int i = 0; i < ROWS; i++) {
+        printf("%d ", ROWS - i);
+        for (int j = 0; j < COLS; j++) {
+            printf("%c", seats[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void arrange_seats(char seats[ROWS][COLS]) {
+    int num_seats;
+
+    printf("Enter the number of seats needed (1-4): ");
+    scanf("%d", &num_seats);
+
+    if (num_seats < 1 || num_seats > 4) {
+        printf("Invalid number of seats.\n");
+        return;
+    }
+
+    int found = 0;
+    if (num_seats <= 3) {
+        // Find consecutive seats in a row
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j <= COLS - num_seats; j++) {
+                int available = 1;
+                for (int k = 0; k < num_seats; k++) {
+                    if (seats[i][j + k] != '-') {
+                        available = 0;
+                        break;
+                    }
+                }
+                if (available) {
+                    found = 1;
+                    for (int k = 0; k < num_seats; k++) {
+                        seats[i][j + k] = '@'; // Mark suggested seats
+                    }
+                    break;
+                }
+            }
+            if (found) break;
+        }
+    } else { // num_seats == 4
+        // Find 4 consecutive in a row or 2 and 2 in adjacent rows
+        // (Implementation for 4 seats is more complex)
+
+        // Try to find 4 consecutive seats in a row
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j <= COLS - num_seats; j++) {
+                int available = 1;
+                for (int k = 0; k < num_seats; k++) {
+                    if (seats[i][j + k] != '-') {
+                        available = 0;
+                        break;
+                    }
+                }
+                if (available) {
+                    found = 1;
+                    for (int k = 0; k < num_seats; k++) {
+                        seats[i][j + k] = '@'; // Mark suggested seats
+                    }
+                    break;
+                }
+            }
+            if (found) break;
+        }
+
+        if (!found) {
+            // Try to find 2 and 2 in adjacent rows
+            for (int i = 0; i < ROWS - 1; i++) {
+                for (int j = 0; j <= COLS - 2; j++) {
+                    int available = 1;
+                    for (int k = 0; k < 2; k++) {
+                        if (seats[i][j + k] != '-' || seats[i + 1][j + k] != '-') {
+                            available = 0;
+                            break;
+                        }
+                    }
+                    if (available) {
+                        found = 1;
+                        for (int k = 0; k < 2; k++) {
+                            seats[i][j + k] = '@';
+                            seats[i + 1][j + k] = '@';
+                        }
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+        }
+
+        if (!found) {
+            printf("Sorry, no suitable arrangement for 4 seats found.\n");
+            return;
+        }
+    }
+
+    if (found) {
+        display_seats(seats);
+        char choice;
+        printf("\nSatisfied with the arrangement? (y/n): ");
+        scanf(" %c", &choice);
+
+        if (choice == 'y') {
+            // Update seats to '*'
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    if (seats[i][j] == '@') {
+                        seats[i][j] = '*';
+                    }
+                }
+            }
+            printf("Seats booked.\n");
+        } else {
+            // Clear '@' marks
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    if (seats[i][j] == '@') {
+                        seats[i][j] = '-';
+                    }
+                }
+            }
+            printf("Arrangement cancelled.\n");
+        }
+    } else {
+        printf("No suitable seats found.\n");
+    }
+}
+
+void choose_seats(char seats[ROWS][COLS]) {
+    int row, col;
+    char input[5];
+
+    printf("Enter seat choices (e.g., 1-2, one at a time, enter 'done' when finished):\n");
+
+    while (1) {
+        printf("Enter seat (or 'done'): ");
+        scanf("%4s", input);
+
+        if (strcmp(input, "done") == 0) {
+            break;
+        }
+
+        if (sscanf(input, "%d-%d", &row, &col) != 2 || row < 1 || row > ROWS || col < 1 || col > COLS) {
+            printf("Invalid input format or seat number.\n");
+            continue;
+        }
+
+        row = ROWS - row;
+        col--;
+
+        if (seats[row][col] != '-') {
+            printf("Seat already taken.\n");
+        } else {
+            seats[row][col] = '@'; // Mark as chosen
+        }
+    }
+
+    display_seats(seats);
+
+    printf("\nConfirm seat selection? (Press any key to continue)\n");
+    getch();
+
+    // Update chosen seats to '*'
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (seats[i][j] == '@') {
+                seats[i][j] = '*';
+            }
+        }
+    }
+}
+
+void exit_program() {
+    char choice;
+    printf("Continue? (y/n): ");
+    scanf(" %c", &choice);
+
+    if (choice == 'y') {
+        // The main loop will handle going back to the menu
+    } else if (choice == 'n') {
+        printf("Exiting program.\n");
+        // exit(0); // Not strictly necessary, but good practice
+    } else {
+        printf("Invalid input. Returning to menu.\n");
+    }
+}
+
+void clear_screen() {
+#ifdef _WIN32
+    system("cls");   // For Windows
+#else
+    system("clear"); // For Linux/macOS
+#endif
 }
