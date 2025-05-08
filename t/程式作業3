@@ -264,62 +264,86 @@ void arrange_seats(char seats[ROWS][COLS]) {
     }
 }
 
+extern void display_seats(char seats[ROWS][COLS]);
+
 void choose_seats(char seats[ROWS][COLS]) {
     int row, col;
-    char input[5];
+    char input[10];
 
-    printf("Enter seat choices (e.g., 1-2, one at a time, enter 'done' when finished):\n");
+    printf("Enter seat choices (e.g., 3-4). One at a time.\n");
+    printf("Type 'done' when finished.\n\n");
 
     while (1) {
         printf("Enter seat (or 'done'): ");
-        scanf("%4s", input);
+        scanf("%9s", input);
 
-        if (strcmp(input, "done") == 0) {
+        if (strcmp(input, "done") == 0 || strcmp(input, "DONE") == 0) {
             break;
         }
 
-        if (sscanf(input, "%d-%d", &row, &col) != 2 || row < 1 || row > ROWS || col < 1 || col > COLS) {
-            printf("Invalid input format or seat number.\n");
+        if (sscanf(input, "%d-%d", &row, &col) != 2) {
+            printf("❌ Invalid format. Use row-col (e.g., 2-5).\n");
             continue;
         }
 
-        row = ROWS - row;
-        col--;
+        if (row < 1 || row > ROWS || col < 1 || col > COLS) {
+            printf("❌ Row must be 1–%d and column 1–%d.\n", ROWS, COLS);
+            continue;
+        }
 
-        if (seats[row][col] != '-') {
-            printf("Seat already taken.\n");
+        int r = ROWS - row; // Flip row index
+        int c = col - 1;    // Convert to 0-based column
+
+        if (seats[r][c] != '-') {
+            printf("❌ Seat %d-%d is already taken.\n", row, col);
         } else {
-            seats[row][col] = '@'; // Mark as chosen
+            seats[r][c] = '@';
+            printf("✅ Seat %d-%d selected.\n", row, col);
         }
     }
 
     display_seats(seats);
 
-    printf("\nConfirm seat selection? (Press any key to continue)\n");
-    getch();
+    printf("\nConfirm seat selection (y/n)? ");
+    char confirm;
+    scanf(" %c", &confirm);
 
-    // Update chosen seats to '*'
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            if (seats[i][j] == '@') {
-                seats[i][j] = '*';
+    if (confirm == 'y' || confirm == 'Y') {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                if (seats[i][j] == '@') {
+                    seats[i][j] = '*';
+                }
             }
         }
+        printf("🎉 Seats booked successfully.\n");
+    } else {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                if (seats[i][j] == '@') {
+                    seats[i][j] = '-';
+                }
+            }
+        }
+        printf("ℹ️  Selection cancelled.\n");
     }
 }
 
-void exit_program() {
+int exit_program() {
     char choice;
-    printf("Continue? (y/n): ");
+
+    printf("\nDo you want to exit the program? (y/n): ");
     scanf(" %c", &choice);
 
-    if (choice == 'y') {
-        // The main loop will handle going back to the menu
-    } else if (choice == 'n') {
-        printf("Exiting program.\n");
-        // exit(0); // Not strictly necessary, but good practice
+    if (choice == 'y' || choice == 'Y') {
+        printf("Exiting program. Goodbye!\n");
+        return 1; // 回傳 1 表示要結束程式
+    } else if (choice == 'n' || choice == 'N') {
+        printf(" Returning to menu...\n");
+        return 0; // 回傳 0 表示繼續執行
     } else {
-        printf("Invalid input. Returning to menu.\n");
+        printf("  Invalid input. Please enter 'y' or 'n'. Returning to menu...\n");
+        return 0;
     }
 }
 
