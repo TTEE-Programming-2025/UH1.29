@@ -148,20 +148,24 @@ void display_menu() {
 }
 
 void display_seats(char seats[ROWS][COLS]) {
-    printf("  ");
+    printf("\n     Seat Layout\n");
+    printf("   ");
     for (int i = 0; i < COLS; i++) {
-        printf("%d", i + 1);
+        printf("%2d", i + 1); // 更整齊地顯示欄編號
     }
     printf("\n");
 
     for (int i = 0; i < ROWS; i++) {
-        printf("%d ", ROWS - i);
+        printf("R%-2d", ROWS - i); // 顯示列編號 (R9, R8, ..., R1)
         for (int j = 0; j < COLS; j++) {
-            printf("%c", seats[i][j]);
+            printf(" %c", seats[i][j]); // 顯示座位狀態，預期為 'O' 或 'X'
         }
         printf("\n");
     }
+    printf("\nLegend: O = Available, X = Booked\n\n");
 }
+
+extern void display_seats(char seats[ROWS][COLS]); // 假設 display_seats 已定義
 
 void arrange_seats(char seats[ROWS][COLS]) {
     int num_seats;
@@ -170,86 +174,63 @@ void arrange_seats(char seats[ROWS][COLS]) {
     scanf("%d", &num_seats);
 
     if (num_seats < 1 || num_seats > 4) {
-        printf("Invalid number of seats.\n");
+        printf("❌ Invalid number of seats.\n");
         return;
     }
 
     int found = 0;
-    if (num_seats <= 3) {
-        // Find consecutive seats in a row
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j <= COLS - num_seats; j++) {
-                int available = 1;
-                for (int k = 0; k < num_seats; k++) {
-                    if (seats[i][j + k] != '-') {
-                        available = 0;
-                        break;
-                    }
-                }
-                if (available) {
-                    found = 1;
-                    for (int k = 0; k < num_seats; k++) {
-                        seats[i][j + k] = '@'; // Mark suggested seats
-                    }
+
+    // === 處理 1~4 個連續座位 ===
+    for (int i = 0; i < ROWS && !found; i++) {
+        for (int j = 0; j <= COLS - num_seats; j++) {
+            int available = 1;
+            for (int k = 0; k < num_seats; k++) {
+                if (seats[i][j + k] != '-') {
+                    available = 0;
                     break;
                 }
             }
-            if (found) break;
-        }
-    } else { // num_seats == 4
-        // Find 4 consecutive in a row or 2 and 2 in adjacent rows
-        // (Implementation for 4 seats is more complex)
-
-        // Try to find 4 consecutive seats in a row
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j <= COLS - num_seats; j++) {
-                int available = 1;
+            if (available) {
+                // 標記候選座位為 '@'
                 for (int k = 0; k < num_seats; k++) {
-                    if (seats[i][j + k] != '-') {
-                        available = 0;
-                        break;
-                    }
+                    seats[i][j + k] = '@';
                 }
-                if (available) {
-                    found = 1;
-                    for (int k = 0; k < num_seats; k++) {
-                        seats[i][j + k] = '@'; // Mark suggested seats
-                    }
-                    break;
-                }
+                found = 1;
+                break;
             }
-            if (found) break;
-        }
-
-        if (!found) {
-            // Try to find 2 and 2 in adjacent rows
-            for (int i = 0; i < ROWS - 1; i++) {
-                for (int j = 0; j <= COLS - 2; j++) {
-                    int available = 1;
-                    for (int k = 0; k < 2; k++) {
-                        if (seats[i][j + k] != '-' || seats[i + 1][j + k] != '-') {
-                            available = 0;
-                            break;
-                        }
-                    }
-                    if (available) {
-                        found = 1;
-                        for (int k = 0; k < 2; k++) {
-                            seats[i][j + k] = '@';
-                            seats[i + 1][j + k] = '@';
-                        }
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-        }
-
-        if (!found) {
-            printf("Sorry, no suitable arrangement for 4 seats found.\n");
-            return;
         }
     }
+
+    if (found) {
+        display_seats(seats);
+        char choice;
+        printf("✅ Suggested seats marked as '@'\n");
+        printf("Are you satisfied with the arrangement? (y/n): ");
+        scanf(" %c", &choice);
+
+        if (choice == 'y' || choice == 'Y') {
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    if (seats[i][j] == '@') {
+                        seats[i][j] = '*'; // 確認訂位
+                    }
+                }
+            }
+            printf("🎉 Seats successfully booked!\n\n");
+        } else {
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    if (seats[i][j] == '@') {
+                        seats[i][j] = '-'; // 取消建議
+                    }
+                }
+            }
+            printf("ℹ️  Arrangement cancelled.\n\n");
+        }
+    } else {
+        printf("❌ No suitable seats found.\n\n");
+    }
+}
 
     if (found) {
         display_seats(seats);
