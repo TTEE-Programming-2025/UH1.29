@@ -348,9 +348,11 @@ int exit_program() {
 }
 
 void clear_screen() {
-#ifdef _WIN32
-    system("cls");   // For Windows
+#if defined(_WIN32) || defined(_WIN64)
+    system("cls");   // Windows
+#elif defined(__linux__) || defined(__APPLE__)
+    system("clear"); // Linux/macOS
 #else
-    system("clear"); // For Linux/macOS
+    printf("\n");    // Fallback: Just add some blank lines
 #endif
 }
