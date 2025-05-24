@@ -93,39 +93,43 @@ void displayWelcomeScreen() {
 }
 
 // 檢查密碼
+#define PASSWORD 2025  // 預設密碼
+
 int checkPassword() {
     int attempts = 0;
-    int password;
-    const int correctPassword = 2025;  // 預設密碼
-    
+    int inputPassword;
+
     do {
         displayWelcomeScreen();
-        printf("請輸入4位數密碼: ");
-        if (scanf("%d", &password) != 1) {
-            printf("輸入無效，請輸入數字！\n");
-            while (getchar() != '\n');  // 清除輸入緩衝區
+        printf("請輸入 4 位數密碼：");
+
+        if (scanf("%d", &inputPassword) != 1) {
+            // 清除輸入緩衝區
+            while (getchar() != '\n');
+            printf("\n[錯誤] 無效的輸入，請輸入數字！\n");
             attempts++;
-            printf("按任意鍵繼續...");
+            printf("\n按任意鍵繼續...");
             getch();
             continue;
         }
-        
-        if (password == correctPassword) {
-            printf("\n密碼正確，歡迎使用本系統！\n");
-            printf("按任意鍵繼續...");
+
+        if (inputPassword == PASSWORD) {
+            printf("\n[成功] 密碼正確，歡迎使用本系統！\n");
+            printf("\n按任意鍵繼續...");
             getch();
-            return 1;  // 密碼正確
+            return 1;  // 登入成功
         } else {
             attempts++;
-            printf("\n密碼錯誤，您還有 %d 次嘗試機會。\n", 3 - attempts);
-            printf("按任意鍵繼續...");
+            printf("\n[錯誤] 密碼錯誤，您還有 %d 次嘗試機會。\n", 3 - attempts);
+            printf("\n按任意鍵繼續...");
             getch();
         }
     } while (attempts < 3);
-    
-    printf("\n警告：您已連續三次輸入錯誤密碼，系統將關閉！\n");
-    return 0;  // 密碼錯誤三次
+
+    printf("\n[警告] 您已連續三次輸入錯誤密碼，系統即將關閉。\n");
+    return 0;
 }
+
 
 // 清除螢幕
 void clearScreen() {
