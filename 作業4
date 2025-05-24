@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <conio.h>  // 用於 getch() 函數
+#include <conio.h>  // 用於 getch()
 
 #define MAX_STUDENTS 10
+#define PASSWORD 2025  // 預設密碼
 
-// 學生結構體
 typedef struct {
     char name[50];
     int id;
@@ -16,68 +16,56 @@ typedef struct {
     float average;
 } Student;
 
-Student students[MAX_STUDENTS];  // 學生陣列
-int studentCount = 0;            // 當前學生數量
+Student students[MAX_STUDENTS];
+int studentCount = 0;
 
-// 函數宣告
+// 函式宣告
 void displayWelcomeScreen();
 int checkPassword();
 void clearScreen();
 void displayMainMenu();
+int inputIntInRange(const char *prompt, int min, int max);
+int isDuplicateID(int id);
 void enterGrades();
 void displayAllGrades();
 void searchStudent();
+int compareAverageDesc(const void* a, const void* b);
 void displayRanking();
 void exitSystem();
 
 int main() {
-    // 步驟1：顯示歡迎畫面並檢查密碼
     if (!checkPassword()) {
-        return 0;  // 密碼錯誤三次，結束程式
+        return 0;
     }
-    
-    // 步驟2：主選單循環
+
     char choice;
     do {
         displayMainMenu();
-        choice = getch();  // 獲取用戶選擇
-        
+        choice = getch();
+
         switch (tolower(choice)) {
-            case 'a':
-                enterGrades();
-                break;
-            case 'b':
-                displayAllGrades();
-                break;
-            case 'c':
-                searchStudent();
-                break;
-            case 'd':
-                displayRanking();
-                break;
-            case 'e':
-                exitSystem();
-                break;
+            case 'a': enterGrades(); break;
+            case 'b': displayAllGrades(); break;
+            case 'c': searchStudent(); break;
+            case 'd': displayRanking(); break;
+            case 'e': exitSystem(); break;
             default:
                 printf("\n無效的選項，請重新選擇！\n");
                 printf("按任意鍵繼續...");
                 getch();
                 break;
         }
-    } while (1);  // 無限循環，直到選擇退出
-    
+    } while (1);
+
     return 0;
 }
 
-// 顯示歡迎畫面
 void displayWelcomeScreen() {
     clearScreen();
     printf("\n");
     printf("***************************************\n");
     printf("*                                     *\n");
-    printf("*      歡迎使用      *\n");
-    printf("*                                     *\n");
-    printf("*           個人風格畫面             *\n");
+    printf("*           歡迎使用學生成績系統          *\n");
     printf("*                                     *\n");
     printf("*   ██████╗ █████╗ ██████╗ ███████╗  *\n");
     printf("*  ██╔════╝██╔══██╗██╔══██╗██╔════╝  *\n");
@@ -86,14 +74,8 @@ void displayWelcomeScreen() {
     printf("*  ╚██████╗██║  ██║██████╔╝███████╗  *\n");
     printf("*   ╚═════╝╚═╝  ╚═╝╚═════╝ ╚══════╝  *\n");
     printf("*                                     *\n");
-    printf("*                                     *\n");
-    printf("*                                     *\n");
-    printf("***************************************\n");
-    printf("\n");
+    printf("***************************************\n\n");
 }
-
-// 檢查密碼
-#define PASSWORD 2025  // 預設密碼
 
 int checkPassword() {
     int attempts = 0;
@@ -104,8 +86,7 @@ int checkPassword() {
         printf("請輸入 4 位數密碼：");
 
         if (scanf("%d", &inputPassword) != 1) {
-            // 清除輸入緩衝區
-            while (getchar() != '\n');
+            while (getchar() != '\n'); // 清除輸入緩衝區
             printf("\n[錯誤] 無效的輸入，請輸入數字！\n");
             attempts++;
             printf("\n按任意鍵繼續...");
@@ -117,7 +98,7 @@ int checkPassword() {
             printf("\n[成功] 密碼正確，歡迎使用本系統！\n");
             printf("\n按任意鍵繼續...");
             getch();
-            return 1;  // 登入成功
+            return 1;
         } else {
             attempts++;
             printf("\n[錯誤] 密碼錯誤，您還有 %d 次嘗試機會。\n", 3 - attempts);
@@ -130,25 +111,21 @@ int checkPassword() {
     return 0;
 }
 
-
-// 清除螢幕
 void clearScreen() {
-    system("cls");  // Windows 系統
-    // system("clear");  // Linux/Mac 系統
+    system("cls"); // Windows
+    // system("clear"); // Linux/Mac 若需要可換用
 }
 
-// 顯示主選單
 void displayMainMenu() {
     clearScreen();
-    printf("\n");
-    printf("------------[Grade System]----------\n");
-    printf("| a. Enter student grades         |\n");
-    printf("| b. Display student grades       |\n");
-    printf("| c. Search for student grades    |\n");
-    printf("| d. Grade ranking                |\n");
-    printf("| e. Exit system                  |\n");
-    printf("------------------------------------\n");
-    printf("\n請選擇一個選項 (a-e): ");
+    printf("\n------------[學生成績管理系統]----------\n");
+    printf("| a. 輸入學生成績                     |\n");
+    printf("| b. 顯示所有學生成績                 |\n");
+    printf("| c. 搜尋學生成績                     |\n");
+    printf("| d. 顯示學生成績排名                 |\n");
+    printf("| e. 離開系統                        |\n");
+    printf("--------------------------------------\n");
+    printf("請選擇一個選項 (a-e): ");
 }
 
 int inputIntInRange(const char *prompt, int min, int max) {
@@ -157,7 +134,7 @@ int inputIntInRange(const char *prompt, int min, int max) {
         printf("%s", prompt);
         if (scanf("%d", &value) != 1) {
             printf("❌ 輸入無效，請輸入整數！\n");
-            while (getchar() != '\n');  // 清空緩衝區
+            while (getchar() != '\n');
             continue;
         }
         if (value < min || value > max) {
@@ -166,11 +143,10 @@ int inputIntInRange(const char *prompt, int min, int max) {
             break;
         }
     }
-    while (getchar() != '\n');  // 清空多餘輸入
+    while (getchar() != '\n');
     return value;
 }
 
-// 檢查學號是否已存在
 int isDuplicateID(int id) {
     for (int i = 0; i < studentCount; i++) {
         if (students[i].id == id) return 1;
@@ -178,7 +154,6 @@ int isDuplicateID(int id) {
     return 0;
 }
 
-// 輸入學生成績
 void enterGrades() {
     clearScreen();
     printf("\n--- 輸入學生成績 ---\n");
@@ -195,11 +170,10 @@ void enterGrades() {
         printf("\n--- 學生 %d ---\n", studentCount + 1);
 
         printf("姓名: ");
-        getchar();  // 先吃掉前一個換行符
+        getchar();  // 吃掉前一個換行符
         fgets(students[studentCount].name, sizeof(students[studentCount].name), stdin);
-        students[studentCount].name[strcspn(students[studentCount].name, "\n")] = '\0'; // 移除換行
+        students[studentCount].name[strcspn(students[studentCount].name, "\n")] = '\0';
 
-        // 學號（檢查 6 位 + 不重複）
         int id;
         do {
             id = inputIntInRange("學號 (6位數): ", 100000, 999999);
@@ -209,14 +183,11 @@ void enterGrades() {
         } while (isDuplicateID(id));
         students[studentCount].id = id;
 
-        // 輸入三科分數
         students[studentCount].math = inputIntInRange("數學成績 (0-100): ", 0, 100);
         students[studentCount].physics = inputIntInRange("物理成績 (0-100): ", 0, 100);
         students[studentCount].english = inputIntInRange("英文成績 (0-100): ", 0, 100);
 
-        // 計算平均
-        students[studentCount].average = 
-            (students[studentCount].math + students[studentCount].physics + students[studentCount].english) / 3.0;
+        students[studentCount].average = (students[studentCount].math + students[studentCount].physics + students[studentCount].english) / 3.0;
 
         studentCount++;
     }
@@ -226,38 +197,29 @@ void enterGrades() {
     getch();
 }
 
-// 顯示所有學生成績
 void displayAllGrades() {
     clearScreen();
     printf("\n--- 所有學生成績 ---\n");
-    
+
     if (studentCount == 0) {
         printf("目前沒有學生資料！\n");
     } else {
-        printf("%-10s %-10s %-8s %-8s %-8s %-8s\n", 
-               "姓名", "學號", "數學", "物理", "英文", "平均");
+        printf("%-10s %-10s %-8s %-8s %-8s %-8s\n", "姓名", "學號", "數學", "物理", "英文", "平均");
         printf("------------------------------------------------\n");
-        
+
         for (int i = 0; i < studentCount; i++) {
-            printf("%-10s %-10d %-8d %-8d %-8d %-8.1f\n", 
-                   students[i].name, 
-                   students[i].id, 
-                   students[i].math, 
-                   students[i].physics, 
-                   students[i].english, 
+            printf("%-10s %-10d %-8d %-8d %-8d %-8.1f\n",
+                   students[i].name,
+                   students[i].id,
+                   students[i].math,
+                   students[i].physics,
+                   students[i].english,
                    students[i].average);
         }
     }
-    
+
     printf("\n按任意鍵返回主選單...");
     getch();
-}
-
-// 比較函式
-int compareAverageDesc(const void* a, const void* b) {
-    const Student* s1 = (const Student*)a;
-    const Student* s2 = (const Student*)b;
-    return (s1->average < s2->average) - (s1->average > s2->average);
 }
 
 void searchStudent() {
@@ -274,12 +236,12 @@ void searchStudent() {
     char searchName[50];
     while (getchar() != '\n');  // 清除緩衝區
     printf("請輸入要搜尋的學生姓名: ");
-    scanf("%49s", searchName);
+    fgets(searchName, sizeof(searchName), stdin);
+    searchName[strcspn(searchName, "\n")] = '\0';
 
     int found = 0;
     printf("\n找到以下學生資料:\n");
-    printf("%-10s %-10s %-8s %-8s %-8s %-8s\n",
-           "姓名", "學號", "數學", "物理", "英文", "平均");
+    printf("%-10s %-10s %-8s %-8s %-8s %-8s\n", "姓名", "學號", "數學", "物理", "英文", "平均");
     printf("------------------------------------------------\n");
 
     for (int i = 0; i < studentCount; i++) {
@@ -303,6 +265,14 @@ void searchStudent() {
     getch();
 }
 
+int compareAverageDesc(const void* a, const void* b) {
+    const Student* s1 = (const Student*)a;
+    const Student* s2 = (const Student*)b;
+    if (s1->average < s2->average) return 1;
+    else if (s1->average > s2->average) return -1;
+    else return 0;
+}
+
 void displayRanking() {
     clearScreen();
     printf("\n--- 學生成績排名 ---\n");
@@ -319,9 +289,8 @@ void displayRanking() {
 
     qsort(sortedStudents, studentCount, sizeof(Student), compareAverageDesc);
 
-    printf("%-5s %-10s %-10s %-8s %-8s %-8s %-8s\n",
-           "名次", "姓名", "學號", "數學", "物理", "英文", "平均");
-    printf("---------------------------------------------------------------\n");
+    printf("%-5s %-10s %-10s %-8s %-8s %-8s %-8s\n", "名次", "姓名", "學號", "數學", "物理", "英文", "平均");
+    printf("----------------------------------------------------------------\n");
 
     for (int i = 0; i < studentCount; i++) {
         printf("%-5d %-10s %-10d %-8d %-8d %-8d %-8.1f\n",
@@ -338,40 +307,12 @@ void displayRanking() {
     getch();
 }
 
-    
-    // 顯示排名結果
-    printf("%-5s %-10s %-10s %-8s\n", "排名", "姓名", "學號", "平均成績");
-    printf("--------------------------------\n");
-    
-    for (int i = 0; i < studentCount; i++) {
-        printf("%-5d %-10s %-10d %-8.1f\n", 
-               i + 1, 
-               sortedStudents[i].name, 
-               sortedStudents[i].id, 
-               sortedStudents[i].average);
-    }
-    
-    printf("\n按任意鍵返回主選單...");
-    getch();
-}
-
-// 退出系統
 void exitSystem() {
-    char confirm;
-    do {
-        clearScreen();
-        printf("\n確定離開？ (y/n): ");
-        confirm = tolower(getch());
-        
-        if (confirm == 'y') {
-            printf("\n感謝使用學生成績管理系統，再見！\n");
-            exit(0);
-        } else if (confirm == 'n') {
-            return;  // 返回主選單
-        } else {
-            printf("\n無效的輸入，請輸入 'y' 或 'n'！\n");
-            printf("按任意鍵繼續...");
-            getch();
-        }
-    } while (1);
+    clearScreen();
+    printf("\n是否確定要離開系統？(Y/N): ");
+    char confirm = getch();
+    if (tolower(confirm) == 'y') {
+        printf("\n感謝使用\n");
+        exit(0);
+    }
 }
