@@ -253,76 +253,91 @@ void displayAllGrades() {
     getch();
 }
 
-// 搜尋學生
+// 比較函式
+int compareAverageDesc(const void* a, const void* b) {
+    const Student* s1 = (const Student*)a;
+    const Student* s2 = (const Student*)b;
+    return (s1->average < s2->average) - (s1->average > s2->average);
+}
+
 void searchStudent() {
     clearScreen();
     printf("\n--- 搜尋學生成績 ---\n");
-    
+
     if (studentCount == 0) {
         printf("目前沒有學生資料！\n");
         printf("\n按任意鍵返回主選單...");
         getch();
         return;
     }
-    
+
     char searchName[50];
+    while (getchar() != '\n');  // 清除緩衝區
     printf("請輸入要搜尋的學生姓名: ");
-    scanf("%s", searchName);
-    
+    scanf("%49s", searchName);
+
     int found = 0;
+    printf("\n找到以下學生資料:\n");
+    printf("%-10s %-10s %-8s %-8s %-8s %-8s\n",
+           "姓名", "學號", "數學", "物理", "英文", "平均");
+    printf("------------------------------------------------\n");
+
     for (int i = 0; i < studentCount; i++) {
-        if (strcmp(students[i].name, searchName) == 0) {
-            printf("\n找到學生資料:\n");
-            printf("%-10s %-10s %-8s %-8s %-8s %-8s\n", 
-                   "姓名", "學號", "數學", "物理", "英文", "平均");
-            printf("------------------------------------------------\n");
-            printf("%-10s %-10d %-8d %-8d %-8d %-8.1f\n", 
-                   students[i].name, 
-                   students[i].id, 
-                   students[i].math, 
-                   students[i].physics, 
-                   students[i].english, 
+        if (strstr(students[i].name, searchName) != NULL) {
+            printf("%-10s %-10d %-8d %-8d %-8d %-8.1f\n",
+                   students[i].name,
+                   students[i].id,
+                   students[i].math,
+                   students[i].physics,
+                   students[i].english,
                    students[i].average);
             found = 1;
-            break;
         }
     }
-    
+
     if (!found) {
-        printf("\n找不到姓名為 %s 的學生資料！\n", searchName);
+        printf("\n找不到姓名含有 '%s' 的學生資料！\n", searchName);
     }
-    
+
     printf("\n按任意鍵返回主選單...");
     getch();
 }
 
-// 顯示成績排名
 void displayRanking() {
     clearScreen();
     printf("\n--- 學生成績排名 ---\n");
-    
+
     if (studentCount == 0) {
         printf("目前沒有學生資料！\n");
         printf("\n按任意鍵返回主選單...");
         getch();
         return;
     }
-    
-    // 創建一個副本陣列用於排序
+
     Student sortedStudents[MAX_STUDENTS];
-    memcpy(sortedStudents, students, sizeof(students));
-    
-    // 使用簡單的冒泡排序按平均成績排序
-    for (int i = 0; i < studentCount - 1; i++) {
-        for (int j = 0; j < studentCount - i - 1; j++) {
-            if (sortedStudents[j].average < sortedStudents[j + 1].average) {
-                // 交換兩個學生
-                Student temp = sortedStudents[j];
-                sortedStudents[j] = sortedStudents[j + 1];
-                sortedStudents[j + 1] = temp;
-            }
-        }
+    memcpy(sortedStudents, students, sizeof(Student) * studentCount);
+
+    qsort(sortedStudents, studentCount, sizeof(Student), compareAverageDesc);
+
+    printf("%-5s %-10s %-10s %-8s %-8s %-8s %-8s\n",
+           "名次", "姓名", "學號", "數學", "物理", "英文", "平均");
+    printf("---------------------------------------------------------------\n");
+
+    for (int i = 0; i < studentCount; i++) {
+        printf("%-5d %-10s %-10d %-8d %-8d %-8d %-8.1f\n",
+               i + 1,
+               sortedStudents[i].name,
+               sortedStudents[i].id,
+               sortedStudents[i].math,
+               sortedStudents[i].physics,
+               sortedStudents[i].english,
+               sortedStudents[i].average);
     }
+
+    printf("\n按任意鍵返回主選單...");
+    getch();
+}
+
     
     // 顯示排名結果
     printf("%-5s %-10s %-10s %-8s\n", "排名", "姓名", "學號", "平均成績");
