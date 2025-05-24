@@ -86,7 +86,7 @@ void displayWelcomeScreen() {
     printf("*  ╚██████╗██║  ██║██████╔╝███████╗  *\n");
     printf("*   ╚═════╝╚═╝  ╚═╝╚═════╝ ╚══════╝  *\n");
     printf("*                                     *\n");
-    printf("*                     *\n");
+    printf("*                                     *\n");
     printf("*                                     *\n");
     printf("***************************************\n");
     printf("\n");
@@ -151,99 +151,77 @@ void displayMainMenu() {
     printf("\n請選擇一個選項 (a-e): ");
 }
 
+int inputIntInRange(const char *prompt, int min, int max) {
+    int value;
+    while (1) {
+        printf("%s", prompt);
+        if (scanf("%d", &value) != 1) {
+            printf("❌ 輸入無效，請輸入整數！\n");
+            while (getchar() != '\n');  // 清空緩衝區
+            continue;
+        }
+        if (value < min || value > max) {
+            printf("⚠️ 請輸入介於 %d 到 %d 之間的數字！\n", min, max);
+        } else {
+            break;
+        }
+    }
+    while (getchar() != '\n');  // 清空多餘輸入
+    return value;
+}
+
+// 檢查學號是否已存在
+int isDuplicateID(int id) {
+    for (int i = 0; i < studentCount; i++) {
+        if (students[i].id == id) return 1;
+    }
+    return 0;
+}
+
 // 輸入學生成績
 void enterGrades() {
     clearScreen();
     printf("\n--- 輸入學生成績 ---\n");
-    
-    // 獲取學生數量 (5-10)
-    int n;
-    do {
-        printf("請輸入學生人數 (5-10): ");
-        if (scanf("%d", &n) != 1) {
-            printf("輸入無效，請輸入數字！\n");
-            while (getchar() != '\n');  // 清除輸入緩衝區
-            continue;
-        }
-        
-        if (n < 5 || n > 10) {
-            printf("人數必須在5到10之間！\n");
-        }
-    } while (n < 5 || n > 10);
-    
-    // 輸入每個學生的資料
-    for (int i = 0; i < n; i++) {
-        printf("\n--- 學生 %d ---\n", i + 1);
-        
-        // 輸入姓名
-        printf("姓名: ");
-        scanf("%s", students[studentCount].name);
-        
-        // 輸入學號 (6位數)
-        do {
-            printf("學號 (6位數字): ");
-            if (scanf("%d", &students[studentCount].id) != 1) {
-                printf("輸入無效，請輸入數字！\n");
-                while (getchar() != '\n');
-                continue;
-            }
-            
-            if (students[studentCount].id < 100000 || students[studentCount].id > 999999) {
-                printf("學號必須是6位數字！\n");
-            }
-        } while (students[studentCount].id < 100000 || students[studentCount].id > 999999);
-        
-        // 輸入數學成績 (0-100)
-        do {
-            printf("數學成績 (0-100): ");
-            if (scanf("%d", &students[studentCount].math) != 1) {
-                printf("輸入無效，請輸入數字！\n");
-                while (getchar() != '\n');
-                continue;
-            }
-            
-            if (students[studentCount].math < 0 || students[studentCount].math > 100) {
-                printf("成績必須在0到100之間！\n");
-            }
-        } while (students[studentCount].math < 0 || students[studentCount].math > 100);
-        
-        // 輸入物理成績 (0-100)
-        do {
-            printf("物理成績 (0-100): ");
-            if (scanf("%d", &students[studentCount].physics) != 1) {
-                printf("輸入無效，請輸入數字！\n");
-                while (getchar() != '\n');
-                continue;
-            }
-            
-            if (students[studentCount].physics < 0 || students[studentCount].physics > 100) {
-                printf("成績必須在0到100之間！\n");
-            }
-        } while (students[studentCount].physics < 0 || students[studentCount].physics > 100);
-        
-        // 輸入英文成績 (0-100)
-        do {
-            printf("英文成績 (0-100): ");
-            if (scanf("%d", &students[studentCount].english) != 1) {
-                printf("輸入無效，請輸入數字！\n");
-                while (getchar() != '\n');
-                continue;
-            }
-            
-            if (students[studentCount].english < 0 || students[studentCount].english > 100) {
-                printf("成績必須在0到100之間！\n");
-            }
-        } while (students[studentCount].english < 0 || students[studentCount].english > 100);
-        
-        // 計算平均成績
-        students[studentCount].average = (students[studentCount].math + 
-                                         students[studentCount].physics + 
-                                         students[studentCount].english) / 3.0;
-        
-        studentCount++;  // 增加學生計數
+
+    int n = inputIntInRange("請輸入學生人數 (5-10): ", 5, 10);
+    if (studentCount + n > MAX_STUDENTS) {
+        printf("⚠️ 無法新增 %d 位學生，超出總容量 %d 人。\n", n, MAX_STUDENTS);
+        printf("按任意鍵返回主選單...");
+        getch();
+        return;
     }
-    
-    printf("\n所有學生資料已輸入完成！\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("\n--- 學生 %d ---\n", studentCount + 1);
+
+        printf("姓名: ");
+        getchar();  // 先吃掉前一個換行符
+        fgets(students[studentCount].name, sizeof(students[studentCount].name), stdin);
+        students[studentCount].name[strcspn(students[studentCount].name, "\n")] = '\0'; // 移除換行
+
+        // 學號（檢查 6 位 + 不重複）
+        int id;
+        do {
+            id = inputIntInRange("學號 (6位數): ", 100000, 999999);
+            if (isDuplicateID(id)) {
+                printf("❌ 此學號已存在，請重新輸入！\n");
+            }
+        } while (isDuplicateID(id));
+        students[studentCount].id = id;
+
+        // 輸入三科分數
+        students[studentCount].math = inputIntInRange("數學成績 (0-100): ", 0, 100);
+        students[studentCount].physics = inputIntInRange("物理成績 (0-100): ", 0, 100);
+        students[studentCount].english = inputIntInRange("英文成績 (0-100): ", 0, 100);
+
+        // 計算平均
+        students[studentCount].average = 
+            (students[studentCount].math + students[studentCount].physics + students[studentCount].english) / 3.0;
+
+        studentCount++;
+    }
+
+    printf("\n✅ 所有學生資料已輸入完成！\n");
     printf("按任意鍵返回主選單...");
     getch();
 }
